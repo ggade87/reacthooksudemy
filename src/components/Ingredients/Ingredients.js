@@ -1,4 +1,10 @@
-import React, { useReducer, useState, useEffect, useCallback } from "react";
+import React, {
+  useReducer,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import ErrorModal from "../UI/ErrorModal";
 import IngredientForm from "./IngredientForm";
 import Search from "./Search";
@@ -66,7 +72,7 @@ function Ingredients() {
     dispatch({ type: "SET", ingredients: filteredIngredients });
   }, []);
 
-  const addIngredientsHandler = (Ingredient) => {
+  const addIngredientsHandler = useCallback((Ingredient) => {
     //setIsLoading(true);
     dispatchHttp({ type: "SEND" });
     fetch("https://rect-hook-update.firebaseio.com/ingredients.json", {
@@ -88,7 +94,7 @@ function Ingredients() {
         //   { id: responseData.name, ...Ingredients },
         // ]);
       });
-  };
+  }, []);
 
   const removeIngredientsHandler = (ingredientId) => {
     //setIsLoading(true);
@@ -113,10 +119,19 @@ function Ingredients() {
       });
   };
 
-  const clearError = () => {
+  const clearError = useCallback(() => {
     //setError(null);
     dispatchHttp({ type: "CLEAR" });
-  };
+  }, []);
+
+  const ingredientsList = useMemo(() => {
+    return (
+      <IngredientList
+        ingredients={userIngredients}
+        onRemoveItem={removeIngredientsHandler}
+      ></IngredientList>
+    );
+  }, [userIngredients, removeIngredientsHandler]);
   return (
     <div className="App">
       {httpState.error && (
@@ -129,10 +144,7 @@ function Ingredients() {
 
       <section>
         <Search onLoadIngredients={filteredIngredientsHandler} />
-        <IngredientList
-          ingredients={userIngredients}
-          onRemoveItem={removeIngredientsHandler}
-        ></IngredientList>
+        {ingredientsList}
       </section>
     </div>
   );
